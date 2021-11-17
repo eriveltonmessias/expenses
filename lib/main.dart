@@ -57,8 +57,8 @@ class  ExpensesApp extends StatelessWidget {
 class _HomepageState extends State<Homepage> {
 
 
-   final List<Transaction> transactions = [
-    ];
+   final List<Transaction> transactions = [];
+   bool _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return transactions.where((tr){
@@ -103,20 +103,57 @@ _removeTransaction(String id){
 
     @override
     Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(title: Text('Depesas'),
+        final  mediaQuery =  MediaQuery.of(context);
+        bool isLandscape =  mediaQuery.orientation == Orientation.landscape;
+
+      final Appbar = AppBar(title: Text('Depesas'),
         actions: [
-          IconButton(onPressed: (){},
+          IconButton(onPressed: () => _openTransactionFormModal(context),
            icon: Icon(Icons.add),
-           )
+           ),
+           IconButton(
+             onPressed: (){
+               setState(() {
+                 _showChart = !_showChart;
+               });
+             },
+           icon: Icon(_showChart ? Icons.list: Icons.pie_chart),
+           ),
+
         ],
-        ),
+        );
+
+      final availabeleHeight = mediaQuery.size.height
+                              - Appbar.preferredSize.height - mediaQuery.padding.top;
+
+      return Scaffold(
+        appBar: Appbar,
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Chart(_recentTransactions),
-              TransactionList(transactions, _removeTransaction),
+            /*if(isLandscape)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Exibir Gráfico'),
+                  Switch(value: _showChart,
+                   onChanged: (value){
+                     setState(() {
+                       _showChart = value;
+                     });
+                   })
+
+                ],
+              ),*/
+              if(_showChart || !isLandscape)Container(
+                height: availabeleHeight * (isLandscape ? 0.7 : 0.3),
+                child: Chart(_recentTransactions),
+              ),
+              if(!_showChart || !isLandscape)Container(
+                height:  availabeleHeight * (isLandscape ? 1 : 0.7),
+                child: TransactionList(transactions, _removeTransaction)
+                ,),
             
             ],
           ),
